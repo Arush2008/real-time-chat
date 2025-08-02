@@ -8,28 +8,30 @@ const messageContainer = document.querySelector(".chat-messages");
 const totalJoinedElement = document.getElementById("total-joined");
 const currentlyOnlineElement = document.getElementById("currently-online");
 
-// Test if elements are found
-console.log('Stats elements found:', {
-    totalJoined: totalJoinedElement,
-    currentlyOnline: currentlyOnlineElement
-});
+// Initialize stats display
+let statsData = {
+    totalJoined: 0,
+    currentlyOnline: 0
+};
 
-// Test manual update (for debugging)
-setTimeout(() => {
-    console.log('🧪 Testing manual stats update...');
+// Function to update stats display
+const updateStatsDisplay = () => {
     if (totalJoinedElement) {
-        totalJoinedElement.textContent = 'TEST';
-        console.log('Manual test: set total joined to TEST');
+        totalJoinedElement.textContent = statsData.totalJoined;
     }
     if (currentlyOnlineElement) {
-        currentlyOnlineElement.textContent = 'TEST';
-        console.log('Manual test: set currently online to TEST');
+        currentlyOnlineElement.textContent = statsData.currentlyOnline;
     }
-}, 2000);
+};
+
+// Set initial display
+updateStatsDisplay();
 
 // Request stats immediately when socket connects
 socket.on('connect', () => {
-    console.log('Socket connected, requesting stats...');
+    console.log('Socket connected successfully!');
+    statsData.currentlyOnline++;
+    updateStatsDisplay();
     socket.emit('request-stats');
 });
 
@@ -45,6 +47,10 @@ if (!name) {
 // Display welcome message
 console.log(`Welcome back, ${name}!`);
 socket.emit('new-user-joined', name);
+
+// Increment stats for this user
+statsData.totalJoined++;
+updateStatsDisplay();
 
 // Keep track of last displayed date
 let lastDisplayedDate = null;
@@ -116,6 +122,8 @@ form.addEventListener('submit', (e) => {
 
 socket.on('user-joined', name => {
     append(`${name} joined the chat`, 'center');
+    statsData.currentlyOnline++;
+    updateStatsDisplay();
 });
 
 socket.on('receive', data => {
@@ -125,6 +133,10 @@ socket.on('receive', data => {
 // Handle user leaving
 socket.on('user-left', name => {
     append(`${name} left the chat`, 'center');
+    if (statsData.currentlyOnline > 0) {
+        statsData.currentlyOnline--;
+        updateStatsDisplay();
+    }
 });
 
 // Load chat history when connecting
@@ -223,21 +235,18 @@ messageInput.addEventListener('keypress', (e) => {
     }
 });
 
-// Handle stats updates
+// Handle stats updates from server (if they work)
 socket.on('stats-update', (stats) => {
-    console.log('📊 Stats update received:', stats);
+    console.log('📊 Server stats received:', stats);
     
-    try {
-        if (totalJoinedElement && stats.totalJoined !== undefined) {
-            totalJoinedElement.textContent = stats.totalJoined;
-            console.log('✅ Updated total joined to:', stats.totalJoined);
+    if (stats && typeof stats === 'object') {
+        if (stats.totalJoined !== undefined) {
+            statsData.totalJoined = stats.totalJoined;
         }
-        
-        if (currentlyOnlineElement && stats.currentlyOnline !== undefined) {
-            currentlyOnlineElement.textContent = stats.currentlyOnline;
-            console.log('✅ Updated currently online to:', stats.currentlyOnline);
+        if (stats.currentlyOnline !== undefined) {
+            statsData.currentlyOnline = stats.currentlyOnline;
         }
-    } catch (error) {
-        console.error('❌ Error updating stats:', error);
+        updateStatsDisplay();
+        console.log('✅ Updated stats from server');
     }
 });
