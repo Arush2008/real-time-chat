@@ -31,6 +31,14 @@ app.get('/', (req, res) => {
     res.send('Chat server is running with stats! 🚀');
 });
 
+// Stats endpoint
+app.get('/stats', (req, res) => {
+    res.json({
+        totalJoined: uniqueUsersEverJoined.size,
+        currentlyOnline: Object.keys(users).length
+    });
+});
+
 console.log('Starting server...');
 
 const users = {};

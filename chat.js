@@ -14,6 +14,22 @@ let statsData = {
     currentlyOnline: 0
 };
 
+// Function to fetch stats from server
+const fetchStats = async () => {
+    try {
+        const response = await fetch(config.getServerUrl() + '/stats');
+        if (response.ok) {
+            const stats = await response.json();
+            statsData.totalJoined = stats.totalJoined;
+            statsData.currentlyOnline = stats.currentlyOnline;
+            updateStatsDisplay();
+            console.log('📊 Fetched stats from server:', stats);
+        }
+    } catch (error) {
+        console.log('📊 Could not fetch stats, using local tracking');
+    }
+};
+
 // Function to update stats display
 const updateStatsDisplay = () => {
     if (totalJoinedElement) {
@@ -24,15 +40,17 @@ const updateStatsDisplay = () => {
     }
 };
 
-// Set initial display
+// Set initial display and fetch real stats
 updateStatsDisplay();
+fetchStats();
+
+// Refresh stats every 10 seconds to keep them accurate
+setInterval(fetchStats, 10000);
 
 // Request stats immediately when socket connects
 socket.on('connect', () => {
     console.log('Socket connected successfully!');
-    statsData.currentlyOnline++;
-    updateStatsDisplay();
-    socket.emit('request-stats');
+    fetchStats(); // Fetch accurate stats when connected
 });
 
 // Check if user already has a saved name
@@ -48,9 +66,10 @@ if (!name) {
 console.log(`Welcome back, ${name}!`);
 socket.emit('new-user-joined', name);
 
-// Increment stats for this user
-statsData.totalJoined++;
-updateStatsDisplay();
+// Fetch updated stats after joining
+setTimeout(() => {
+    fetchStats();
+}, 1000);
 
 // Keep track of last displayed date
 let lastDisplayedDate = null;
@@ -122,8 +141,7 @@ form.addEventListener('submit', (e) => {
 
 socket.on('user-joined', name => {
     append(`${name} joined the chat`, 'center');
-    statsData.currentlyOnline++;
-    updateStatsDisplay();
+    fetchStats(); // Refresh stats when someone joins
 });
 
 socket.on('receive', data => {
@@ -133,10 +151,7 @@ socket.on('receive', data => {
 // Handle user leaving
 socket.on('user-left', name => {
     append(`${name} left the chat`, 'center');
-    if (statsData.currentlyOnline > 0) {
-        statsData.currentlyOnline--;
-        updateStatsDisplay();
-    }
+    fetchStats(); // Refresh stats when someone leaves
 });
 
 // Load chat history when connecting
@@ -155,8 +170,8 @@ socket.on('chat-history', (history) => {
     });
     
     // Request stats after loading chat history
-    console.log('Chat history loaded, requesting stats...');
-    socket.emit('request-stats');
+    console.log('Chat history loaded, fetching stats...');
+    fetchStats();
 });
 
 // Handle chat being cleared by admin
