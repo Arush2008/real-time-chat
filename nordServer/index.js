@@ -46,7 +46,7 @@ const PORT = process.env.PORT || 3000;
 
 // Basic route for health check
 app.get('/', (req, res) => {
-    res.send('Chat server is running with stats! 🚀 - Updated v2');
+    res.send('Chat server is running with stats! 🚀 - Updated v3 - NEW DEPLOYMENT');
 });
 
 // Debug route
@@ -58,6 +58,24 @@ app.get('/debug', (req, res) => {
         usersLength: typeof users !== 'undefined' ? Object.keys(users).length : 'undefined',
         uniqueUsersSize: typeof uniqueUsersEverJoined !== 'undefined' ? uniqueUsersEverJoined.size : 'undefined'
     });
+});
+
+// Alternative stats endpoint to test deployment
+app.get('/api/stats', (req, res) => {
+    try {
+        console.log('📊 API Stats endpoint requested');
+        const statsResponse = {
+            totalJoined: uniqueUsersEverJoined.size,
+            currentlyOnline: Object.keys(users).length,
+            timestamp: new Date().toISOString(),
+            version: 'v3'
+        };
+        console.log('📤 Sending API stats:', statsResponse);
+        res.json(statsResponse);
+    } catch (error) {
+        console.error('❌ Error in API stats endpoint:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 // Stats endpoint
