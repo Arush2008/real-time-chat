@@ -1,16 +1,12 @@
 // nord servers
 const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
-
 const app = express();
-const server = http.createServer(app);
-const PORT = process.env.PORT || 3000;
+const http = require('http').createServer(app);
 
-const io = new Server(server, {
+const io = require('socket.io')(http, {
     cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
+        origin: '*',  // Allow connections from anywhere
+        methods: ['GET', 'POST']
     }
 });
 
@@ -19,7 +15,8 @@ app.get('/', (req, res) => {
     res.send('Chat server is running! 🚀');
 });
 
-console.log(`Server running on port ${PORT}`);
+// IMPORTANT: use the Railway port!
+const PORT = process.env.PORT || 3000;
 
 const users = {};
 const chatHistory = []; // Store all messages
@@ -89,7 +86,7 @@ io.on('connection', socket => {
     });
 });
 
-// Start the server
-server.listen(PORT, () => {
+// IMPORTANT: use http.listen(...) not server.listen(...)
+http.listen(PORT, () => {
     console.log(`🚀 Chat server is running on port ${PORT}`);
 });
