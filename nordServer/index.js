@@ -58,11 +58,12 @@ io.on('connection', socket => {
     });
 
     socket.on('request-stats', () => {
+        console.log('📊 Stats requested by client');
         const currentStats = {
             totalJoined: uniqueUsersEverJoined.size,
             currentlyOnline: Object.keys(users).length
         };
-        console.log('Sending requested stats:', currentStats);
+        console.log('📤 Sending requested stats:', currentStats);
         socket.emit('stats-update', currentStats);
     });
 

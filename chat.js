@@ -14,6 +14,19 @@ console.log('Stats elements found:', {
     currentlyOnline: currentlyOnlineElement
 });
 
+// Test manual update (for debugging)
+setTimeout(() => {
+    console.log('🧪 Testing manual stats update...');
+    if (totalJoinedElement) {
+        totalJoinedElement.textContent = 'TEST';
+        console.log('Manual test: set total joined to TEST');
+    }
+    if (currentlyOnlineElement) {
+        currentlyOnlineElement.textContent = 'TEST';
+        console.log('Manual test: set currently online to TEST');
+    }
+}, 2000);
+
 // Request stats immediately when socket connects
 socket.on('connect', () => {
     console.log('Socket connected, requesting stats...');
