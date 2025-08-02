@@ -1,10 +1,22 @@
 // nord servers
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+
+const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
-const io = require('socket.io')(PORT, {
+
+const io = new Server(server, {
     cors: {
         origin: "*",
         methods: ["GET", "POST"]
     }
+});
+
+// Basic route for health check
+app.get('/', (req, res) => {
+    res.send('Chat server is running! 🚀');
 });
 
 console.log(`Server running on port ${PORT}`);
@@ -75,4 +87,9 @@ io.on('connection', socket => {
             socket.emit('admin-error', 'Invalid admin password');
         }
     });
-})
+});
+
+// Start the server
+server.listen(PORT, () => {
+    console.log(`🚀 Chat server is running on port ${PORT}`);
+});
