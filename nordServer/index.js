@@ -21,7 +21,7 @@ console.log('Starting server...');
 const users = {};
 const chatHistory = [];
 const adminPassword = "Arush@100";
-let totalUsersEverJoined = 0; // Track total users who have ever joined
+const uniqueUsersEverJoined = new Set(); // Track unique usernames that have ever joined
 
 io.on('connection', socket => {
     // Send chat history to new user
@@ -29,28 +29,32 @@ io.on('connection', socket => {
     
     // Send current stats to new user
     socket.emit('stats-update', {
-        totalJoined: totalUsersEverJoined,
+        totalJoined: uniqueUsersEverJoined.size,
         currentlyOnline: Object.keys(users).length
     });
 
     socket.on('new-user-joined', name => {
         console.log("New user", name);
         users[socket.id] = name;
-        totalUsersEverJoined++; // Increment total users count
         
-        // Add join message to history
-        const joinMessage = {
-            type: 'join',
-            message: `${name} joined the chat`,
-            timestamp: new Date()
-        };
-        chatHistory.push(joinMessage);
+        // Only add to unique users if this username hasn't been seen before
+        const isNewUser = !uniqueUsersEverJoined.has(name);
+        uniqueUsersEverJoined.add(name);
         
-        socket.broadcast.emit('user-joined', name);
+        // Only add join message to history if it's a truly new user
+        if (isNewUser) {
+            const joinMessage = {
+                type: 'join',
+                message: `${name} joined the chat`,
+                timestamp: new Date()
+            };
+            chatHistory.push(joinMessage);
+            socket.broadcast.emit('user-joined', name);
+        }
         
         // Send updated stats to all users
         io.emit('stats-update', {
-            totalJoined: totalUsersEverJoined,
+            totalJoined: uniqueUsersEverJoined.size,
             currentlyOnline: Object.keys(users).length
         });
     });
@@ -88,7 +92,7 @@ io.on('connection', socket => {
             
             // Send updated stats to all remaining users
             io.emit('stats-update', {
-                totalJoined: totalUsersEverJoined,
+                totalJoined: uniqueUsersEverJoined.size,
                 currentlyOnline: Object.keys(users).length
             });
         }
