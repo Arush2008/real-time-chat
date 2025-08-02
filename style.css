@@ -84,6 +84,29 @@ body {
     border-top-right-radius: 4px;
 }
 
+/* Center messages for join/leave notifications */
+.message-container.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0;
+    max-width: 100%;
+    float: none;
+    clear: both;
+}
+
+.center-message {
+    background-color: #f0f0f0;
+    color: #666;
+    padding: 8px 16px;
+    border-radius: 15px;
+    font-size: 14px;
+    text-align: center;
+    font-style: italic;
+    border: none;
+    display: inline-block;
+}
+
 .input-area {
     padding: 20px;
     background-color: white;

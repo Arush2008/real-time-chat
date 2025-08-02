@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>I Chat U</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="http://localhost:8000/socket.io/socket.io.js"></script>
-    <script src="chat.js"></script>
-    <link href="style.css" rel="stylesheet">
+    <script defer src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <script defer src="chat.js"></script>
+    <link defer href="style.css" rel="stylesheet">
 </head>
 <body>
     <div class="chat-container">
@@ -24,8 +24,8 @@
                 <div class="message">Hi Alex! I'm doing great, thanks for asking! 😊</div>
             </div>
         </div>
-        <div class="input-area">
-            <input type="text" class="user-input" id="user-input-id" placeholder="Type your message here...">
+        <div class="input-area" id="send-container">
+            <input type="text" class="user-input" id="user-input" placeholder="Type your message here...">
             <button class="send-btn" id="send-btn-id">Send</button>
         </div>
     </div>
