@@ -196,10 +196,21 @@ messageInput.addEventListener('keypress', (e) => {
 
 // Handle stats updates
 socket.on('stats-update', (stats) => {
+    console.log('Stats update received:', stats);
+    console.log('Total joined element:', totalJoinedElement);
+    console.log('Currently online element:', currentlyOnlineElement);
+    
     if (totalJoinedElement) {
         totalJoinedElement.textContent = stats.totalJoined;
+        console.log('Updated total joined to:', stats.totalJoined);
+    } else {
+        console.error('Total joined element not found!');
     }
+    
     if (currentlyOnlineElement) {
         currentlyOnlineElement.textContent = stats.currentlyOnline;
+        console.log('Updated currently online to:', stats.currentlyOnline);
+    } else {
+        console.error('Currently online element not found!');
     }
 });

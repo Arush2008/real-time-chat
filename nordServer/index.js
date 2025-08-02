@@ -28,10 +28,12 @@ io.on('connection', socket => {
     socket.emit('chat-history', chatHistory);
     
     // Send current stats to new user
-    socket.emit('stats-update', {
+    const currentStats = {
         totalJoined: uniqueUsersEverJoined.size,
         currentlyOnline: Object.keys(users).length
-    });
+    };
+    console.log('Sending initial stats to new user:', currentStats);
+    socket.emit('stats-update', currentStats);
 
     socket.on('new-user-joined', name => {
         console.log("New user", name);
@@ -53,10 +55,12 @@ io.on('connection', socket => {
         }
         
         // Send updated stats to all users
-        io.emit('stats-update', {
+        const updatedStats = {
             totalJoined: uniqueUsersEverJoined.size,
             currentlyOnline: Object.keys(users).length
-        });
+        };
+        console.log('Broadcasting updated stats:', updatedStats);
+        io.emit('stats-update', updatedStats);
     });
 
     socket.on('send', message => {
@@ -91,10 +95,12 @@ io.on('connection', socket => {
             delete users[socket.id];
             
             // Send updated stats to all remaining users
-            io.emit('stats-update', {
+            const disconnectStats = {
                 totalJoined: uniqueUsersEverJoined.size,
                 currentlyOnline: Object.keys(users).length
-            });
+            };
+            console.log('Broadcasting stats after disconnect:', disconnectStats);
+            io.emit('stats-update', disconnectStats);
         }
     });
 
