@@ -4,15 +4,29 @@ const http = require('http').createServer(app);
 
 // Add CORS headers for all routes
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    const allowedOrigins = [
+        'https://arush2008.github.io',
+        'https://real-time-chat-1-fnin.onrender.com',
+        'http://localhost:3000',
+        'http://127.0.0.1:3000'
+    ];
+    
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin) || !origin) {
+        res.header('Access-Control-Allow-Origin', origin || '*');
+    }
+    
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     res.header('Access-Control-Allow-Credentials', 'false');
+    
+    console.log(`${req.method} ${req.path} - Origin: ${origin || 'none'}`);
+    
     if (req.method === 'OPTIONS') {
-        res.sendStatus(200);
-    } else {
-        next();
+        console.log('Handling OPTIONS preflight request');
+        return res.status(200).end();
     }
+    next();
 });
 
 // Enable JSON parsing
@@ -37,18 +51,27 @@ app.get('/', (req, res) => {
 
 // Stats endpoint
 app.get('/stats', (req, res) => {
-    console.log('📊 Stats endpoint requested');
-    const statsResponse = {
-        totalJoined: uniqueUsersEverJoined.size,
-        currentlyOnline: Object.keys(users).length,
-        timestamp: new Date().toISOString()
-    };
-    console.log('📤 Sending stats:', statsResponse);
-    res.json(statsResponse);
+    try {
+        console.log('📊 Stats endpoint requested');
+        console.log('📊 Current users object:', Object.keys(users));
+        console.log('📊 Unique users set size:', uniqueUsersEverJoined.size);
+        
+        const statsResponse = {
+            totalJoined: uniqueUsersEverJoined.size,
+            currentlyOnline: Object.keys(users).length,
+            timestamp: new Date().toISOString()
+        };
+        console.log('📤 Sending stats:', statsResponse);
+        res.json(statsResponse);
+    } catch (error) {
+        console.error('❌ Error in stats endpoint:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 console.log('Starting server...');
 
+// Initialize data structures BEFORE setting up routes
 const users = {};
 const chatHistory = [];
 const adminPassword = "Arush@100";
