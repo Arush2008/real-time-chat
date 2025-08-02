@@ -8,6 +8,27 @@ const messageContainer = document.querySelector(".chat-messages");
 const totalJoinedElement = document.getElementById("total-joined");
 const currentlyOnlineElement = document.getElementById("currently-online");
 
+// Test if elements are found and set initial values
+console.log('Stats elements found:', {
+    totalJoined: totalJoinedElement,
+    currentlyOnline: currentlyOnlineElement
+});
+
+// Set initial values for debugging
+if (totalJoinedElement) {
+    totalJoinedElement.textContent = "?";
+    console.log('Set initial total joined to ?');
+} else {
+    console.error('Total joined element not found during initialization!');
+}
+
+if (currentlyOnlineElement) {
+    currentlyOnlineElement.textContent = "?";
+    console.log('Set initial currently online to ?');
+} else {
+    console.error('Currently online element not found during initialization!');
+}
+
 // Check if user already has a saved name
 let name = localStorage.getItem('chatUserName');
 if (!name) {
