@@ -16,31 +16,37 @@ let statsData = {
 
 // Function to fetch stats from server
 const fetchStats = async () => {
-    try {
-        const url = config.getServerUrl() + '/stats';
-        console.log('🔍 Fetching stats from:', url);
-        
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            mode: 'cors'
-        });
-        
-        console.log('📡 Response status:', response.status, response.statusText);
-        
-        if (response.ok) {
-            const stats = await response.json();
-            statsData.totalJoined = stats.totalJoined;
-            statsData.currentlyOnline = stats.currentlyOnline;
-            updateStatsDisplay();
-            console.log('📊 Fetched stats from server:', stats);
-        } else {
-            console.log('❌ Stats fetch failed:', response.status, response.statusText);
+    console.log('📊 Requesting stats via Socket.io');
+    // Use Socket.io as primary method since HTTP endpoints are having deployment issues
+    socket.emit('request-stats');
+    
+    // Also try HTTP endpoints as backup
+    const endpoints = ['/api/stats', '/stats'];
+    
+    for (const endpoint of endpoints) {
+        try {
+            const url = config.getServerUrl() + endpoint;
+            console.log('🔍 Trying HTTP fallback:', url);
+            
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                mode: 'cors'
+            });
+            
+            if (response.ok) {
+                const stats = await response.json();
+                statsData.totalJoined = stats.totalJoined;
+                statsData.currentlyOnline = stats.currentlyOnline;
+                updateStatsDisplay();
+                console.log('📊 Fetched stats from HTTP:', stats);
+                return; // Success, exit the function
+            }
+        } catch (error) {
+            // Silently fail HTTP attempts since we're using Socket.io as primary
         }
-    } catch (error) {
-        console.log('📊 Could not fetch stats:', error.message);
     }
 };
 
