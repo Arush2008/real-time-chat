@@ -1,8 +1,8 @@
 // Configuration for different environments
 const config = {
-    // Update this URL after deploying to Railway
-    // Example: 'https://real-time-chat-production.up.railway.app'
-    PRODUCTION_SERVER_URL: 'https://real-time-chat-production.up.railway.app', 
+    // Replace this with your actual Railway URL after deployment
+    // Example: 'https://real-time-chat-production-abc123.up.railway.app'
+    PRODUCTION_SERVER_URL: 'YOUR_RAILWAY_URL_HERE', // ⬅️ REPLACE THIS
     
     // Local development
     LOCAL_SERVER_URL: 'http://localhost:3000',
