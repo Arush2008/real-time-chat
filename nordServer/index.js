@@ -46,7 +46,18 @@ const PORT = process.env.PORT || 3000;
 
 // Basic route for health check
 app.get('/', (req, res) => {
-    res.send('Chat server is running with stats! 🚀');
+    res.send('Chat server is running with stats! 🚀 - Updated v2');
+});
+
+// Debug route
+app.get('/debug', (req, res) => {
+    res.json({
+        message: 'Debug endpoint working',
+        routes: ['/', '/stats', '/debug'],
+        timestamp: new Date().toISOString(),
+        usersLength: typeof users !== 'undefined' ? Object.keys(users).length : 'undefined',
+        uniqueUsersSize: typeof uniqueUsersEverJoined !== 'undefined' ? uniqueUsersEverJoined.size : 'undefined'
+    });
 });
 
 // Stats endpoint
