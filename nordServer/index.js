@@ -21,14 +21,22 @@ console.log('Starting server...');
 const users = {};
 const chatHistory = [];
 const adminPassword = "Arush@100";
+let totalUsersEverJoined = 0; // Track total users who have ever joined
 
 io.on('connection', socket => {
     // Send chat history to new user
     socket.emit('chat-history', chatHistory);
+    
+    // Send current stats to new user
+    socket.emit('stats-update', {
+        totalJoined: totalUsersEverJoined,
+        currentlyOnline: Object.keys(users).length
+    });
 
     socket.on('new-user-joined', name => {
         console.log("New user", name);
         users[socket.id] = name;
+        totalUsersEverJoined++; // Increment total users count
         
         // Add join message to history
         const joinMessage = {
@@ -39,6 +47,12 @@ io.on('connection', socket => {
         chatHistory.push(joinMessage);
         
         socket.broadcast.emit('user-joined', name);
+        
+        // Send updated stats to all users
+        io.emit('stats-update', {
+            totalJoined: totalUsersEverJoined,
+            currentlyOnline: Object.keys(users).length
+        });
     });
 
     socket.on('send', message => {
@@ -52,7 +66,7 @@ io.on('connection', socket => {
         // Add to chat history
         chatHistory.push(chatMessage);
         
-        socket.broadcast.emit('receive', { message: message, name: users[socket.id] });
+        socket.broadcast.emit('receive', { message: message, name: users[socket.id], timestamp: chatMessage.timestamp });
     });
 
     // Handle user disconnect
@@ -71,6 +85,12 @@ io.on('connection', socket => {
             
             socket.broadcast.emit('user-left', userName);
             delete users[socket.id];
+            
+            // Send updated stats to all remaining users
+            io.emit('stats-update', {
+                totalJoined: totalUsersEverJoined,
+                currentlyOnline: Object.keys(users).length
+            });
         }
     });
 

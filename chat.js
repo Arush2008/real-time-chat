@@ -4,6 +4,10 @@ const form = document.getElementById("send-container");
 const messageInput = document.getElementById("user-input");
 const messageContainer = document.querySelector(".chat-messages");
 
+// Get references to stats elements
+const totalJoinedElement = document.getElementById("total-joined");
+const currentlyOnlineElement = document.getElementById("currently-online");
+
 // Check if user already has a saved name
 let name = localStorage.getItem('chatUserName');
 if (!name) {
@@ -17,7 +21,43 @@ if (!name) {
 console.log(`Welcome back, ${name}!`);
 socket.emit('new-user-joined', name);
 
-const append = (message, position) => {
+// Keep track of last displayed date
+let lastDisplayedDate = null;
+
+// Function to format date for display
+const formatDate = (date) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return date.toLocaleDateString('en-US', options);
+};
+
+// Function to format time for display
+const formatTime = (date) => {
+    return date.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true 
+    });
+};
+
+// Function to check if date separator is needed
+const addDateSeparatorIfNeeded = (messageDate) => {
+    const dateString = formatDate(messageDate);
+    
+    if (lastDisplayedDate !== dateString) {
+        const dateSeparator = document.createElement('div');
+        dateSeparator.classList.add('date-separator');
+        dateSeparator.innerHTML = `<span class="date-text">${dateString}</span>`;
+        messageContainer.appendChild(dateSeparator);
+        lastDisplayedDate = dateString;
+    }
+};
+
+const append = (message, position, timestamp = null) => {
+    const messageDate = timestamp ? new Date(timestamp) : new Date();
+    
+    // Add date separator if it's a new day
+    addDateSeparatorIfNeeded(messageDate);
+    
     const messageElement = document.createElement("div");
     
     if (position === 'center') {
@@ -27,9 +67,11 @@ const append = (message, position) => {
     } else {
         // For regular chat messages
         messageElement.classList.add("message-container", position);
+        const timeString = formatTime(messageDate);
         messageElement.innerHTML = `
             <div class="user-name">${position === 'right' ? 'You' : (message.name || 'User')}</div>
             <div class="message">${message.message || message}</div>
+            <div class="message-time">${timeString}</div>
         `;
     }
     
@@ -41,7 +83,7 @@ form.addEventListener('submit', (e) => {
     e.preventDefault();
     const message = messageInput.value.trim();
     if (message) {
-        append({message: message}, 'right');
+        append({message: message}, 'right', new Date());
         socket.emit('send', message);
         messageInput.value = '';
     }
@@ -52,7 +94,7 @@ socket.on('user-joined', name => {
 });
 
 socket.on('receive', data => {
-    append(data, 'left');
+    append(data, 'left', data.timestamp);
 });
 
 // Handle user leaving
@@ -62,16 +104,16 @@ socket.on('user-left', name => {
 
 // Load chat history when connecting
 socket.on('chat-history', (history) => {
-    // Clear existing messages (except the demo ones)
-    const demoMessages = messageContainer.querySelectorAll('.message-container');
-    demoMessages.forEach(msg => msg.remove());
+    // Clear existing messages
+    messageContainer.innerHTML = '';
+    lastDisplayedDate = null; // Reset date tracking
     
-    // Add all historical messages
+    // Add all historical messages with their timestamps
     history.forEach(item => {
         if (item.type === 'join' || item.type === 'leave') {
-            append(item.message, 'center');
+            append(item.message, 'center', item.timestamp);
         } else if (item.type === 'message') {
-            append({message: item.message, name: item.name}, 'left');
+            append({message: item.message, name: item.name}, 'left', item.timestamp);
         }
     });
 });
@@ -79,6 +121,7 @@ socket.on('chat-history', (history) => {
 // Handle chat being cleared by admin
 socket.on('chat-cleared', () => {
     messageContainer.innerHTML = '';
+    lastDisplayedDate = null; // Reset date tracking
     append('Chat has been cleared by admin', 'center');
 });
 
@@ -112,7 +155,7 @@ document.getElementById('send-btn-id').addEventListener('click', () => {
             return;
         }
         
-        append({message: message}, 'right');
+        append({message: message}, 'right', new Date());
         socket.emit('send', message);
         messageInput.value = '';
     }
@@ -144,9 +187,19 @@ messageInput.addEventListener('keypress', (e) => {
                 return;
             }
             
-            append({message: message}, 'right');
+            append({message: message}, 'right', new Date());
             socket.emit('send', message);
             messageInput.value = '';
         }
+    }
+});
+
+// Handle stats updates
+socket.on('stats-update', (stats) => {
+    if (totalJoinedElement) {
+        totalJoinedElement.textContent = stats.totalJoined;
+    }
+    if (currentlyOnlineElement) {
+        currentlyOnlineElement.textContent = stats.currentlyOnline;
     }
 });
