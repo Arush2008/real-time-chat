@@ -14,6 +14,12 @@ console.log('Stats elements found:', {
     currentlyOnline: currentlyOnlineElement
 });
 
+// Request stats immediately when socket connects
+socket.on('connect', () => {
+    console.log('Socket connected, requesting stats...');
+    socket.emit('request-stats');
+});
+
 // Check if user already has a saved name
 let name = localStorage.getItem('chatUserName');
 if (!name) {
@@ -26,12 +32,6 @@ if (!name) {
 // Display welcome message
 console.log(`Welcome back, ${name}!`);
 socket.emit('new-user-joined', name);
-
-// Request current stats after joining
-setTimeout(() => {
-    console.log('Requesting stats...');
-    socket.emit('request-stats');
-}, 1000);
 
 // Keep track of last displayed date
 let lastDisplayedDate = null;
@@ -128,6 +128,10 @@ socket.on('chat-history', (history) => {
             append({message: item.message, name: item.name}, 'left', item.timestamp);
         }
     });
+    
+    // Request stats after loading chat history
+    console.log('Chat history loaded, requesting stats...');
+    socket.emit('request-stats');
 });
 
 // Handle chat being cleared by admin
@@ -208,21 +212,19 @@ messageInput.addEventListener('keypress', (e) => {
 
 // Handle stats updates
 socket.on('stats-update', (stats) => {
-    console.log('Stats update received:', stats);
-    console.log('Total joined element:', totalJoinedElement);
-    console.log('Currently online element:', currentlyOnlineElement);
+    console.log('📊 Stats update received:', stats);
     
-    if (totalJoinedElement) {
-        totalJoinedElement.textContent = stats.totalJoined;
-        console.log('Updated total joined to:', stats.totalJoined);
-    } else {
-        console.error('Total joined element not found!');
-    }
-    
-    if (currentlyOnlineElement) {
-        currentlyOnlineElement.textContent = stats.currentlyOnline;
-        console.log('Updated currently online to:', stats.currentlyOnline);
-    } else {
-        console.error('Currently online element not found!');
+    try {
+        if (totalJoinedElement && stats.totalJoined !== undefined) {
+            totalJoinedElement.textContent = stats.totalJoined;
+            console.log('✅ Updated total joined to:', stats.totalJoined);
+        }
+        
+        if (currentlyOnlineElement && stats.currentlyOnline !== undefined) {
+            currentlyOnlineElement.textContent = stats.currentlyOnline;
+            console.log('✅ Updated currently online to:', stats.currentlyOnline);
+        }
+    } catch (error) {
+        console.error('❌ Error updating stats:', error);
     }
 });
