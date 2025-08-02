@@ -8,7 +8,7 @@ const io = require('socket.io')(http, {
     }
 });
 
-// IMPORTANT: use the Railway port!
+// IMPORTANT: use the Render port!
 const PORT = process.env.PORT || 3000;
 
 // Basic route for health check
