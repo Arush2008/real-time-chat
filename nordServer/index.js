@@ -24,16 +24,10 @@ const adminPassword = "Arush@100";
 const uniqueUsersEverJoined = new Set(); // Track unique usernames that have ever joined
 
 io.on('connection', socket => {
+    console.log('New socket connection established');
+    
     // Send chat history to new user
     socket.emit('chat-history', chatHistory);
-    
-    // Send current stats to new user
-    const currentStats = {
-        totalJoined: uniqueUsersEverJoined.size,
-        currentlyOnline: Object.keys(users).length
-    };
-    console.log('Sending initial stats to new user:', currentStats);
-    socket.emit('stats-update', currentStats);
 
     socket.on('new-user-joined', name => {
         console.log("New user", name);
@@ -54,13 +48,22 @@ io.on('connection', socket => {
             socket.broadcast.emit('user-joined', name);
         }
         
-        // Send updated stats to all users
+        // Send updated stats to ALL users (including the one who just joined)
         const updatedStats = {
             totalJoined: uniqueUsersEverJoined.size,
             currentlyOnline: Object.keys(users).length
         };
-        console.log('Broadcasting updated stats:', updatedStats);
+        console.log('Broadcasting updated stats to all users:', updatedStats);
         io.emit('stats-update', updatedStats);
+    });
+
+    socket.on('request-stats', () => {
+        const currentStats = {
+            totalJoined: uniqueUsersEverJoined.size,
+            currentlyOnline: Object.keys(users).length
+        };
+        console.log('Sending requested stats:', currentStats);
+        socket.emit('stats-update', currentStats);
     });
 
     socket.on('send', message => {
