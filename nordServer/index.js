@@ -1,26 +1,26 @@
-// nord servers
 const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
-
 const io = require('socket.io')(http, {
     cors: {
-        origin: '*',  // Allow connections from anywhere
+        origin: '*',
         methods: ['GET', 'POST']
     }
 });
+
+// IMPORTANT: use the Railway port!
+const PORT = process.env.PORT || 3000;
 
 // Basic route for health check
 app.get('/', (req, res) => {
     res.send('Chat server is running! 🚀');
 });
 
-// IMPORTANT: use the Railway port!
-const PORT = process.env.PORT || 3000;
+console.log('Starting server...');
 
 const users = {};
-const chatHistory = []; // Store all messages
-const adminPassword = "Arush@100"; // Set your admin password
+const chatHistory = [];
+const adminPassword = "Arush@100";
 
 io.on('connection', socket => {
     // Send chat history to new user
@@ -87,6 +87,20 @@ io.on('connection', socket => {
 });
 
 // IMPORTANT: use http.listen(...) not server.listen(...)
-http.listen(PORT, () => {
+http.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Chat server is running on port ${PORT}`);
+}).on('error', (err) => {
+    console.error('Server failed to start:', err);
+    process.exit(1);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+    process.exit(1);
+});
+
+process.on('unhandledRejection', (err) => {
+    console.error('Unhandled Rejection:', err);
+    process.exit(1);
 });
