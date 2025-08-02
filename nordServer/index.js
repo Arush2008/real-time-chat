@@ -1,10 +1,25 @@
 const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
+
+// Add CORS headers for all routes
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+    } else {
+        next();
+    }
+});
+
 const io = require('socket.io')(http, {
     cors: {
-        origin: '*',
-        methods: ['GET', 'POST']
+        origin: "*",
+        methods: ["GET", "POST"],
+        allowedHeaders: ["Content-Type"],
+        credentials: false
     }
 });
 
