@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 
 // Basic route for health check
 app.get('/', (req, res) => {
-    res.send('Chat server is running! 🚀');
+    res.send('Chat server is running with stats! 🚀');
 });
 
 console.log('Starting server...');
