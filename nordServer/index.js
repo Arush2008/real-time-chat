@@ -1,10 +1,13 @@
 // nord servers
-const io = require('socket.io')(3000, {
+const PORT = process.env.PORT || 3000;
+const io = require('socket.io')(PORT, {
     cors: {
         origin: "*",
         methods: ["GET", "POST"]
     }
 });
+
+console.log(`Server running on port ${PORT}`);
 
 const users = {};
 const chatHistory = []; // Store all messages
