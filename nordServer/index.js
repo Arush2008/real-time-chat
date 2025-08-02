@@ -7,6 +7,7 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'false');
     if (req.method === 'OPTIONS') {
         res.sendStatus(200);
     } else {
@@ -14,11 +15,14 @@ app.use((req, res, next) => {
     }
 });
 
+// Enable JSON parsing
+app.use(express.json());
+
 const io = require('socket.io')(http, {
     cors: {
-        origin: "*",
+        origin: ["*", "https://arush2008.github.io", "https://real-time-chat-1-fnin.onrender.com"],
         methods: ["GET", "POST"],
-        allowedHeaders: ["Content-Type"],
+        allowedHeaders: ["Content-Type", "Authorization"],
         credentials: false
     }
 });
@@ -33,10 +37,14 @@ app.get('/', (req, res) => {
 
 // Stats endpoint
 app.get('/stats', (req, res) => {
-    res.json({
+    console.log('📊 Stats endpoint requested');
+    const statsResponse = {
         totalJoined: uniqueUsersEverJoined.size,
-        currentlyOnline: Object.keys(users).length
-    });
+        currentlyOnline: Object.keys(users).length,
+        timestamp: new Date().toISOString()
+    };
+    console.log('📤 Sending stats:', statsResponse);
+    res.json(statsResponse);
 });
 
 console.log('Starting server...');

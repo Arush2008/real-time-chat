@@ -17,16 +17,30 @@ let statsData = {
 // Function to fetch stats from server
 const fetchStats = async () => {
     try {
-        const response = await fetch(config.getServerUrl() + '/stats');
+        const url = config.getServerUrl() + '/stats';
+        console.log('🔍 Fetching stats from:', url);
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            mode: 'cors'
+        });
+        
+        console.log('📡 Response status:', response.status, response.statusText);
+        
         if (response.ok) {
             const stats = await response.json();
             statsData.totalJoined = stats.totalJoined;
             statsData.currentlyOnline = stats.currentlyOnline;
             updateStatsDisplay();
             console.log('📊 Fetched stats from server:', stats);
+        } else {
+            console.log('❌ Stats fetch failed:', response.status, response.statusText);
         }
     } catch (error) {
-        console.log('📊 Could not fetch stats, using local tracking');
+        console.log('📊 Could not fetch stats:', error.message);
     }
 };
 
